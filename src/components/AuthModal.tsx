@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react'
 import { AnimatePresence, motion } from "motion/react"
-import { Lock, Mail, User, X } from 'lucide-react'
+import { CircleDashed, Lock, Mail, User, X } from 'lucide-react'
 import Image from 'next/image'
+import axios from 'axios'
+import { signIn, useSession } from 'next-auth/react'
 
 type propType = {
     open: boolean,
@@ -15,7 +17,44 @@ type stepType = "login" | "signup" | "otp"
 const AuthModal = ({open, onClose}: propType) => {
 
     const [step, setStep] = useState<stepType>("login")
+    const [name, setName] = useState("")
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const [loading, setLoading] = useState(false)
+    const [err, setErr] = useState("")
+    const {data} = useSession()
+    console.log(data);
 
+    const handleSignUp = async() => {
+        setLoading(true)
+        try {
+            const {data} = await axios.post("/api/auth/register", {
+                name, email, password
+            })
+            console.log(data);
+            setLoading(false)
+        } catch (error:any) {
+            setLoading(false);
+            setErr(error.response.data.message ?? "something went wrong");
+        }
+    }
+
+    const handleLogin = async() => {
+        setLoading(true)
+        const res = await signIn("credentials", {
+            email, password, redirect: false
+        })
+        setLoading(false)
+        console.log(res);
+    }
+
+const handleGoogleLogin = async() => {
+    try {
+        await signIn("google")
+    } catch (error) {
+        console.error("Google Login Error:", error) 
+    }
+}
     return (
         <AnimatePresence>
             {open && (
@@ -41,7 +80,7 @@ const AuthModal = ({open, onClose}: propType) => {
                                     </p>
                                 </div>
                                 <button className='w-full h-11 rounded-xl border border-black/20 flex items-center justify-center gap-3 text-sm font-semibold
-                                hover:bg-black hover:text-white transition'>
+                                hover:bg-black hover:text-white transition' onClick={handleGoogleLogin}>
                                     <Image src={"/google.png"} alt='google' width={20} height={20}/>
                                     Continue with Google
                                 </button>
@@ -58,16 +97,20 @@ const AuthModal = ({open, onClose}: propType) => {
                                             <div className='mt-5 space-y-4'>
                                                 <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
                                                     <Mail size={18} className='text-gray-500'/>
-                                                    <input type="email" placeholder='Email' 
+                                                    <input type="email" placeholder='Email' onChange={(e)=>setEmail(e.target.value)}
+                                                    value={email}
                                                     className='w-full bg-transparent outline-none text-sm'/>
                                                 </div>
                                                 <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
                                                     <Lock size={18} className='text-gray-500'/>
-                                                    <input type="password" placeholder='Password' 
+                                                    <input type="password" placeholder='Password' onChange={(e)=>setPassword(e.target.value)}
+                                                    value={password}
                                                     className='w-full bg-transparent outline-none text-sm'/>
                                                 </div>
-                                                <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-600 transition'>
-                                                    Login
+                                                <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-600 transition'
+                                                onClick={handleLogin}>
+                                                    {!loading ? "Login" : <CircleDashed size={18} color='white'
+                                                    className='animate-spin'/>}
                                                 </button>
                                             </div>
                                             <p className='mt-5 text-center text-sm text-gray-500'>
@@ -88,21 +131,33 @@ const AuthModal = ({open, onClose}: propType) => {
                                             <div className='mt-5 space-y-4'>
                                                 <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
                                                     <User size={18} className='text-gray-500'/>
-                                                    <input type="email" placeholder='Email' 
+                                                    <input type="name" placeholder='Name' onChange={(e)=>setName(e.target.value)}
+                                                    value={name}
                                                     className='w-full bg-transparent outline-none text-sm'/>
                                                 </div>
                                                 <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
                                                     <Mail size={18} className='text-gray-500'/>
-                                                    <input type="email" placeholder='Email' 
+                                                    <input type="email" placeholder='Email' onChange={(e)=>setEmail(e.target.value)}
+                                                    value={email}
                                                     className='w-full bg-transparent outline-none text-sm'/>
                                                 </div>
                                                 <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
                                                     <Lock size={18} className='text-gray-500'/>
-                                                    <input type="password" placeholder='Password' 
+                                                    <input type="password" placeholder='Password' onChange={(e)=>setPassword(e.target.value)}
+                                                    value={password}
                                                     className='w-full bg-transparent outline-none text-sm'/>
                                                 </div>
-                                                <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-600 transition'>
-                                                    Sign Up
+
+                                                {err && 
+                                                    <p className='text-red-500'>
+                                                        {err}
+                                                    </p>
+                                                }
+
+                                                <button onClick={handleSignUp} disabled={loading}
+                                                className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-600 transition flex justify-center items-center'>
+                                                    {!loading ? "Sign Up" : <CircleDashed size={18} color='white'
+                                                    className='animate-spin'/>}
                                                 </button>
                                             </div>
                                             <p className='mt-5 text-center text-sm text-gray-500'>
