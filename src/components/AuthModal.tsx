@@ -14,7 +14,12 @@ type propType = {
 
 type stepType = "login" | "signup" | "otp"
 
+
 const AuthModal = ({open, onClose}: propType) => {
+
+    const {data, status, update} = useSession()
+    console.log({data, status, update});
+
 
     const [step, setStep] = useState<stepType>("login")
     const [name, setName] = useState("")
@@ -22,8 +27,7 @@ const AuthModal = ({open, onClose}: propType) => {
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
     const [err, setErr] = useState("")
-    const {data} = useSession()
-    console.log(data);
+    const [otp, setOtp] = useState(["","","","","",""])
 
     const handleSignUp = async() => {
         setLoading(true)
@@ -31,9 +35,27 @@ const AuthModal = ({open, onClose}: propType) => {
             const {data} = await axios.post("/api/auth/register", {
                 name, email, password
             })
-            console.log(data);
+            setErr("")
+            setStep("otp")
             setLoading(false)
         } catch (error:any) {
+            setLoading(false);
+            setErr(error.response.data.message ?? "something went wrong");
+        }
+    }
+
+    const handleVerifyEmail = async() => {
+        setLoading(true)
+        try {
+            const {data} = await axios.post("/api/auth/verify-email", {
+                email, otp:otp.join("")
+            })
+            console.log(data);
+            setOtp(["","","","","",""])
+            setErr("")
+            setStep("login")
+            setLoading(false)
+        } catch (error: any) {
             setLoading(false);
             setErr(error.response.data.message ?? "something went wrong");
         }
@@ -48,13 +70,27 @@ const AuthModal = ({open, onClose}: propType) => {
         console.log(res);
     }
 
-const handleGoogleLogin = async() => {
-    try {
-        await signIn("google")
-    } catch (error) {
-        console.error("Google Login Error:", error) 
+    const handleGoogleLogin = async() => {
+        try {
+            await signIn("google")
+        } catch (error) {
+            console.error("Google Login Error:", error) 
+        }
     }
-}
+
+    const handleChangeOtp = (index:number, value:string) =>{
+        if (!/^[0-9]?$/.test(value)) return
+        const updated = [...otp]
+        updated[index] = value
+        setOtp(updated)
+        if(value && index < otp.length-1){
+            document.getElementById(`otp-${index+1}`)?.focus()
+        }
+        if(!value && index > 0){
+            document.getElementById(`otp-${index-1}`)?.focus()
+        }
+    }
+
     return (
         <AnimatePresence>
             {open && (
@@ -107,7 +143,7 @@ const handleGoogleLogin = async() => {
                                                     value={password}
                                                     className='w-full bg-transparent outline-none text-sm'/>
                                                 </div>
-                                                <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-600 transition'
+                                                <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-600 transition flex justify-center items-center'
                                                 onClick={handleLogin}>
                                                     {!loading ? "Login" : <CircleDashed size={18} color='white'
                                                     className='animate-spin'/>}
@@ -156,7 +192,7 @@ const handleGoogleLogin = async() => {
 
                                                 <button onClick={handleSignUp} disabled={loading}
                                                 className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-600 transition flex justify-center items-center'>
-                                                    {!loading ? "Sign Up" : <CircleDashed size={18} color='white'
+                                                    {!loading ? "Send Otp" : <CircleDashed size={18} color='white'
                                                     className='animate-spin'/>}
                                                 </button>
                                             </div>
@@ -169,6 +205,25 @@ const handleGoogleLogin = async() => {
                                                     Login
                                                 </span>
                                             </p>
+                                        </motion.div>
+                                    )}
+                                    {step == "otp" && (
+                                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                                        >
+                                            <h2 className='text-xl font-semibold'>Verify Email</h2>
+                                            <div className='flex mt-6 justify-between gap-2'>
+                                                {otp.map((digit,i) => (
+                                                    <input key={i} id={`otp-${i}`} value={digit} maxLength={1}
+                                                    className='w-10 h-12 sm:w-12 text-center text-lg font-semibold rounded-xl bg-white border border-black/20 outline-none'
+                                                    onChange={(e)=>handleChangeOtp(i, e.target.value)}/>
+                                                ))}
+                                            </div>
+                                            <button onClick={handleVerifyEmail}
+                                            className='mt-6 w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex justify-center items-center'
+                                            >
+                                                {!loading ? "Verify OTP and Create Account" : <CircleDashed size={18} color='white'
+                                                className='animate-spin'/>}
+                                            </button>
                                         </motion.div>
                                     )}
                                 </div>
