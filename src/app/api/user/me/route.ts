@@ -19,7 +19,14 @@ export async function GET (req: Request) {
                 {status: 400}
             )
         }
+        return Response.json(
+            user,
+            {status: 200}
+        )
     } catch (error) {
-        
+        return Response.json(
+            {message: `get me error ${error}`},
+            {status: 500}
+        )
     }
 }
