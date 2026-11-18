@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth, { customFetch } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import connectDb from "./lib/db"
-import User from "./models/user.models"
+import User from "./models/user.model"
 import bcrypt from "bcryptjs"
 import Google from "next-auth/providers/google"
 import { ProxyAgent, fetch as undiciFetch } from "undici"
 
 const dispatcher = new ProxyAgent("http://127.0.0.1:57519")
 function proxyFetch(...args: Parameters<typeof fetch>): ReturnType<typeof fetch> {
-  return undiciFetch(args[0], { ...args[1], dispatcher }) as any
+    return undiciFetch(args[0] as Parameters<typeof undiciFetch>[0], { ...args[1], dispatcher } as any) as any
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({

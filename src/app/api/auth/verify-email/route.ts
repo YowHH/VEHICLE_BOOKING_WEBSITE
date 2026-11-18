@@ -1,5 +1,5 @@
 import connectDb from "@/lib/db";
-import User from "@/models/user.models";
+import User from "@/models/user.model";
 
 export async function POST(req:Request){
     try {

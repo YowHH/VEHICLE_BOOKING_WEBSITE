@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import connectDb from "@/lib/db";
-import User from "@/models/user.models";
+import User from "@/models/user.model";
 
 export async function GET (req: Request) {
     try {

@@ -1,4 +1,4 @@
-import { IUser } from '@/models/user.models'
+import { IUser } from '@/models/user.model'
 import { createSlice } from '@reduxjs/toolkit'
 
 export interface IuserState {

@@ -1,6 +1,6 @@
 import connectDb from "@/lib/db";
 import { sendMail } from "@/lib/sendMail";
-import User from "@/models/user.models";
+import User from "@/models/user.model";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 

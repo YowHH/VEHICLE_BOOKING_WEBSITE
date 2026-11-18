@@ -51,7 +51,7 @@ const VehicleSlider = () => {
               disabled:hover:bg-white disabled:hover:text-zinc-900 disabled:hover:border-zinc-200 transition-all text-zinc-700 shadow-sm'>
                 <ChevronLeft size={18} strokeWidth={2.5}/>
               </motion.div>
-              <motion.div whileTap={{scale: 0.88}} onClick={()=>scroll("lright")}
+              <motion.div whileTap={{scale: 0.88}} onClick={()=>scroll("right")}
               className='w-11 h-11 rounded-2xl border border-zinc-200 bg-white flex items-center justify-center hover:bg-zinc-900 hover:text-white disabled:opacity-25
               disabled:hover:bg-white disabled:hover:text-zinc-900 disabled:hover:border-zinc-200 transition-all text-zinc-700 shadow-sm'>
                 <ChevronRight size={18} strokeWidth={2.5}/>
@@ -110,7 +110,7 @@ const VehicleSlider = () => {
                   <p className='text-zinc-900 text-lg font-black tracking-tight'>
                     {d.num}
                   </p>
-                  <p className='text-zinc-400 text-xs font-medium'>
+                  <p className='text-black text-xs font-medium'>
                     {d.label}
                   </p>
                 </div>
