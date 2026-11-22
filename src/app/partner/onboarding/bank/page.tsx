@@ -3,7 +3,7 @@
 
 import React from 'react'
 import { motion } from "motion/react"
-import { ArrowLeft, BadgeCheck, CreditCard, Landmark, Phone } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, CheckCircle, CreditCard, Landmark, Phone } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 const page = () => {
@@ -112,6 +112,18 @@ const page = () => {
                         </div>
                     </div>
                 </div>
+                <div className='mt-6 flex items-start gap-3 text-xs text-gray-500'>
+                    <CheckCircle size={16} className='mt-0.5'/>
+                    <p>
+                        Bank etails are verified before first payment.
+                        This usually takes 24 - 48 hours.
+                    </p>
+                </div>
+                <motion.button whileHover={{scale: 1.02}} whileTap={{scale: 0.97}}
+                className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semiboldflex items-center justify-center gap-2
+                disabled:opacity-40 transition'>
+                    Continue
+                </motion.button>
             </motion.div>
         </div>
     )
