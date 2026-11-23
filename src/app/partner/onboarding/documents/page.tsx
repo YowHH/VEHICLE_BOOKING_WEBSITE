@@ -1,14 +1,53 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client"
 
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from "motion/react"
-import { ArrowLeft, FileCheck, UploadCloud } from 'lucide-react'
+import { ArrowLeft, CircleDashed, FileCheck, UploadCloud } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import axios from 'axios'
+
+type docsType = "idProof" | "license" | "vehicleRegistration"
 
 const page = () => {
 
     const router = useRouter()
+    const [docs, setDocs] = useState<Record<docsType,File | null>>({
+        idProof: null,
+        license: null,
+        vehicleRegistration: null
+    })
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
+
+    const handleDocs = async () => {
+        setLoading(true)
+        setError("")
+        try {
+            const formdata = new FormData()
+            if(!docs.idProof || !docs.license || !docs.vehicleRegistration){                
+                setError("All doucuments are required.")
+                setLoading(false)
+                return null    
+            }
+            formdata.append("idProof",docs.idProof)
+            formdata.append("license",docs.license)
+            formdata.append("vehicleRegistration",docs.vehicleRegistration)
+            const {data} = await axios.post("/api/partner/onboarding/documents", formdata)
+            setLoading(false)
+        } catch (error: any) {
+            setError(error?.response?.data?.message ?? "something went wrong!")
+            setLoading(false)
+        }
+    }
+
+
+    const handleImage = (doc:docsType, file:File | null) => {
+        if(!file){
+            return
+        }
+        setDocs((prev) => ({...prev,[doc]:file}))
+    }
 
     return (
         <div className='min-h-screen bg-white flex items-center justify-center px-4'>
@@ -42,6 +81,7 @@ const page = () => {
                                 <UploadCloud size={18}/>
                             </div>
                         </div>
+                        <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("idProof", e.target?.files?.[0] || null)}/>
                     </motion.label>
                     <motion.label whileHover={{scale: 1.02}}
                     className='flex items-center justify-between p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-black transition'>
@@ -55,6 +95,7 @@ const page = () => {
                                 <UploadCloud size={18}/>
                             </div>
                         </div>
+                        <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("license", e.target?.files?.[0] || null)}/>
                     </motion.label>
                     <motion.label whileHover={{scale: 1.02}}
                     className='flex items-center justify-between p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-black transition'>
@@ -68,16 +109,18 @@ const page = () => {
                                 <UploadCloud size={18}/>
                             </div>
                         </div>
+                        <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("vehicleRegistration", e.target?.files?.[0] || null)}/>
                     </motion.label>
                 </div>
                 <div className='mt-6 flex items-start gap-3 text-xs text-gray-500'>
                     <FileCheck size={16} className='mt-0.5'/>
                     <p>Documents are securely stored and manually verified by our teams.</p>
                 </div>
-                <motion.button whileHover={{scale: 1.02}} whileTap={{scale: 0.97}}
-                className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semiboldflex items-center justify-center gap-2
+                {error && <p className='text-red-500 mt-4'>*{error}</p>}
+                <motion.button whileHover={{scale: 1.02}} whileTap={{scale: 0.97}} onClick={handleDocs} disabled={loading}
+                className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold flex items-center justify-center gap-2
                 disabled:opacity-40 transition'>
-                    Continue
+                    {loading ? <CircleDashed className='text-white animate-spin'/> :"Continue"}
                 </motion.button>
             </motion.div>
         </div>

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-type vehicleType= "bike" | "car" | "loading" | "truck" | "auto"
+type vehicleType= "motor" | "car" | "van" | "4wd" | "lorry"
 
 interface IVehicle{
     owner: mongoose.Types.ObjectId;
@@ -26,7 +26,7 @@ const vehicleSchema = new mongoose.Schema<IVehicle>({
     },
     type: {
         type: String,
-        enum:["bike",  "car" , "loading" , "truck" , "auto"],
+        enum:["motor",  "car" , "van" , "4wd" , "lorry"],
         required: true
     },
     number: {

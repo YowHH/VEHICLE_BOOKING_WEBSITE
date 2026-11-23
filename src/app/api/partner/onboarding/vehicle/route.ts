@@ -43,7 +43,7 @@ export async function POST (req:Request){
             },{status: 400})
         }
 
-        let vehicle = await Vehicle.findOne({owner: session.user.id})
+        let vehicle = await Vehicle.findOne({owner: user.id})
 
         if (vehicle){
             vehicle.type = type
@@ -56,6 +56,7 @@ export async function POST (req:Request){
             return Response.json(vehicle,{status: 200})
         }
         vehicle = await Vehicle.create({
+            owner: user._id,
             type,
             number: vehicleNumber,
             vehicleModel
@@ -71,6 +72,7 @@ export async function POST (req:Request){
         return Response.json(vehicle,{status: 201})
 
     } catch (error) {
+        console.log(error);
         return Response.json({message: `vehicle error ${error}`},{status: 500})
     }
 }

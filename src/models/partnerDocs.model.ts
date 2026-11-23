@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 interface IPartnerDocs{
     owner: mongoose.Types.ObjectId;
     idProofUrl: string,
-    rcUrl: string,
+    vehicleRegistrationUrl: string,
     licenseUrl: string,
     status: "approved" | "pending" | "rejected";
     rejectionReason?: string;
@@ -18,7 +18,7 @@ const partnerDocsSchema = new mongoose.Schema<IPartnerDocs>({
         required: true
     },
     idProofUrl: String,
-    rcUrl: String,
+    vehicleRegistrationUrl: String,
     licenseUrl: String,
     status: {
         type: String,

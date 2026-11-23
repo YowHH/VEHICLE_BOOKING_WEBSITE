@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  experimental: {
+    proxyClientMaxBodySize: 25 * 1024 * 1024, // 25MB，覆盖三张文件 + multipart 开销
+  },
 };
 
 

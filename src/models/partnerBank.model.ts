@@ -3,11 +3,18 @@ import mongoose from "mongoose";
 interface IPartnerBank {
     owner: mongoose.Types.ObjectId;
     accountHolder: string;
-    accountNumberMasked: string;
+    
+    // 前端传过来的原始账号，存库前会被转换为 hash 和 masked
+    accountNumberRaw?: string; 
+    
+    accountNumberMasked?: string;
     accountNumberHash: string;
-    ifsc?: string;
+    
+    // 统一后的银行路由代码（例如 IFSC / SWIFT）
+    bankCode?: string;
+    
     iban?: string;
-    swiftBic?: string;
+    
     paymentHandle?: string;
     paymentHandleType?: "duitnow" | "upi" | "paynow" | "promptpay" | "phone" | "email" | "other";
     verificationProvider?: "cashfree" | "setu" | "razorpay" | "other";
@@ -30,36 +37,35 @@ const partnerBankSchema = new mongoose.Schema<IPartnerBank>({
         required: true,
         trim: true
     },
+    // 这是一个虚拟/临时字段，不会真正存进 MongoDB
+    accountNumberRaw: {
+        type: String,
+    },
     accountNumberMasked: {
         type: String,
-        required: true
+        // 改为选填，因为 IBAN 有时不需要遮罩
     },
     accountNumberHash: {
         type: String,
         required: true,
         unique: true
     },
-    ifsc: {
+    // 统一银行代码，代替原来的 ifsc 和 swiftBic
+    bankCode: {
         type: String,
         uppercase: true,
-        match: /^[A-Z]{4}0[A-Z0-9]{6}$/
+        trim: true,
     },
     iban: {
         type: String,
         uppercase: true,
-        match: /^[A-Z]{2}[0-9A-Z]{13,32}$/
-    },
-    swiftBic: {
-        type: String,
-        uppercase: true,
-        match: /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/
+        trim: true,
     },
     paymentHandle: String,
     paymentHandleType: {
         type: String,
         enum: ["duitnow", "upi", "paynow", "promptpay", "phone", "email", "other"]
     },
-
     verificationProvider: {
         type: String,
         enum: ["cashfree", "setu", "razorpay", "other"]
@@ -70,14 +76,15 @@ const partnerBankSchema = new mongoose.Schema<IPartnerBank>({
         enum: ["active", "invalid", "unknown"]
     },
     verifiedAt: Date,
-
     status: {
         type: String,
         enum: ["not_added", "added", "verified"],
         default: "not_added"
     },
 }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: { virtuals: true }, 
+    toObject: { virtuals: true }
 })
 
 partnerBankSchema.index({ owner: 1 }, { unique: true });
