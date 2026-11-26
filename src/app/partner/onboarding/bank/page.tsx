@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from "motion/react"
 import { ArrowLeft, BadgeCheck, CheckCircle, CircleDashed, CreditCard, Landmark } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -19,36 +19,64 @@ const page = () => {
     const [paymentHandleType, setPaymentHandleType] = useState<"duitnow" | "upi" | "paynow" | "promptpay" | "phone" | "email" | "other">("upi")
 
     const handleBank = async () => {
-        // 1. 严格校验前三个必填项
         if (!accountHolder.trim() || !accountNumber.trim() || !bankCode.trim()) {
             setError("Please fill in Account Holder Name, Account Number, and Bank Routing Code.")
             return
+        }
+        if (accountHolder.trim().length < 3) return setError("Account Holder Name must be at least 3 characters.")
+        if (accountNumber.trim().length < 8) return setError("Account Number must be at least 8 characters.")
+        if (bankCode.trim().length < 8) return setError("Bank Routing Code must be at least 8 characters.")
+        const cleanHandle = paymentHandle.trim()
+        if (cleanHandle !== "") {
+            if (cleanHandle.length < 3) {
+                return setError("Payment ID is too short.")
+            }
+            switch (paymentHandleType) {
+                case "email":
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanHandle)) {
+                        return setError("Please enter a valid email address.")
+                    }
+                    break;
+                case "phone":
+                case "promptpay":
+                    if (!/^\d{9,15}$/.test(cleanHandle)) {
+                        return setError("Please enter a valid phone number (9-15 digits).")
+                    }
+                    break;
+                case "upi":
+                    if (!/^[\w.-]+@[\w.-]+$/.test(cleanHandle)) {
+                        return setError("Please enter a valid UPI ID (e.g., name@bank).")
+                    }
+                    break;
+                case "duitnow":
+                case "paynow":
+                    if (cleanHandle.length < 7) {
+                        return setError(`Please enter a valid ${paymentHandleType} ID.`)
+                    }
+                    break;
+                case "other":
+                    break;
+            }
         }
 
         setLoading(true)
         setError("")
         
         try {
-            // 2. 构建 Payload，并在这里统一处理转大写和去空格
             const payload: any = {
                 accountHolder: accountHolder.trim(),
                 accountNumber: accountNumber.trim().toUpperCase(),
                 bankCode: bankCode.trim().toUpperCase(),
             }
             
-            // 3. 只有支付ID有内容时，才加入到 payload 中发给后端
-            if (paymentHandle.trim() !== "") {
-                payload.paymentHandle = paymentHandle.trim()
+            if (cleanHandle !== "") {
+                payload.paymentHandle = cleanHandle
                 payload.paymentHandleType = paymentHandleType
             }
 
-            console.log("Payload sent to backend:", payload); // 方便调试
-
             const { data } = await axios.post("/api/partner/onboarding/bank", payload)
             console.log("Success:", data);
-            
-            // 上传成功后的跳转逻辑，请自行修改路径
-            // router.push("/partner/dashboard")
+            // router.push('/next-step')
             
         } catch (error: any) {
             console.error("Backend Error:", error);
@@ -57,6 +85,33 @@ const page = () => {
             setLoading(false)
         }
     }
+
+    const getPlaceholder = () => {
+        switch (paymentHandleType) {
+            case "email": return "e.g. name@domain.com";
+            case "phone": return "e.g. 0123456789";
+            case "upi": return "e.g. name@okicici";
+            case "promptpay": return "e.g. 0812345678";
+            case "duitnow": return "e.g. 0123456789 or ID";
+            case "paynow": return "e.g. 91234567 or UEN";
+            default: return "Enter payment ID";
+        }
+    }
+
+    useEffect(() => {
+        const handleGetBank = async () => {
+            try {
+                const { data } = await axios.get("/api/partner/onboarding/bank")
+                console.log(data);
+                setAccountHolder(data.partnerBank.accountHolder)
+                setAccountNumber(data.partnerBank.accountNumber)
+                setBankCode(data.partnerBank.bankCode)
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        handleGetBank()
+    }, [])
 
     return (
         <div className='min-h-screen bg-white flex items-center justify-center px-4'>
@@ -72,7 +127,6 @@ const page = () => {
                 </div>
 
                 <div className='mt-8 space-y-6'>
-                    {/* 1. 户名 (必填) */}
                     <div>
                         <label htmlFor="accountHolder" className='text-xs font-semibold text-gray-500'>
                             Account Holder Name <span className="text-red-500">*</span>
@@ -80,13 +134,13 @@ const page = () => {
                         <div className='flex items-center gap-2 mt-2'>
                             <div className='text-gray-400'><BadgeCheck /></div>
                             <input type="text" placeholder='As per bank record' id='accountHolder'
+                                minLength={3}
                                 className='flex-1 border-b pb-2 text-sm focus:outline-none border-gray-200 focus:border-black'
                                 value={accountHolder}
                                 onChange={(e) => setAccountHolder(e.target.value)} />
                         </div>
                     </div>
 
-                    {/* 2. 账号 / IBAN (必填) */}
                     <div>
                         <label htmlFor="accountNumber" className='text-xs font-semibold text-gray-500'>
                             Account Number / IBAN <span className="text-red-500">*</span>
@@ -94,14 +148,13 @@ const page = () => {
                         <div className='flex items-center gap-2 mt-2'>
                             <div className='text-gray-400'><CreditCard /></div>
                             <input type="text" placeholder='Enter account number or IBAN' id='accountNumber'
+                                minLength={8}
                                 className='flex-1 border-b pb-2 text-sm focus:outline-none border-gray-200 focus:border-black uppercase'
                                 value={accountNumber}
                                 onChange={(e) => setAccountNumber(e.target.value)} /> 
-                                {/* 修复：去掉了 .toUpperCase()，改用 CSS uppercase，防止输入光标跳动 */}
                         </div>
                     </div>
 
-                    {/* 3. 银行路由代码 (必填) */}
                     <div>
                         <label htmlFor="bankCode" className='text-xs font-semibold text-gray-500'>
                             Bank Routing Code (IFSC / SWIFT) <span className="text-red-500">*</span>
@@ -109,20 +162,22 @@ const page = () => {
                         <div className='flex items-center gap-2 mt-2'>
                             <div className='text-gray-400'><Landmark /></div>
                             <input type="text" placeholder='e.g. HDFC0001234 or HFGC0012345' id='bankCode'
+                                minLength={8}
                                 className='flex-1 border-b pb-2 text-sm focus:outline-none border-gray-200 focus:border-black uppercase'
                                 value={bankCode}
                                 onChange={(e) => setBankCode(e.target.value)} />
-                                {/* 修复：去掉了 .toUpperCase()，改用 CSS uppercase */}
                         </div>
                     </div>
 
-                    {/* 4. Payment Handle (选填) */}
                     <div>
                         <label htmlFor="paymentHandle" className="text-xs font-semibold text-gray-500">Payment ID (optional)</label>
                         <div className="flex items-center gap-2 mt-2">
                             <select
                                 value={paymentHandleType}
-                                onChange={(e) => setPaymentHandleType(e.target.value as any)}
+                                onChange={(e) => {
+                                    setPaymentHandleType(e.target.value as any)
+                                    setPaymentHandle("") 
+                                }}
                                 className="border-b pb-2 text-sm focus:outline-none border-gray-200 focus:border-black bg-transparent text-gray-600 cursor-pointer"
                             >
                                 <option value="duitnow">DuitNow</option>
@@ -133,7 +188,7 @@ const page = () => {
                                 <option value="email">Email</option>
                                 <option value="other">Other</option>
                             </select>
-                            <input type="text" id="paymentHandle" placeholder="e.g. 0123456789 or name@bank"
+                            <input type="text" id="paymentHandle" placeholder={getPlaceholder()}
                                 className="flex-1 border-b pb-2 text-sm focus:outline-none border-gray-200 focus:border-black"
                                 value={paymentHandle}
                                 onChange={(e) => setPaymentHandle(e.target.value)}

@@ -1,25 +1,26 @@
 import mongoose from "mongoose";
 
-interface IPartnerDocs{
+interface IPartnerDocs {
     owner: mongoose.Types.ObjectId;
-    idProofUrl: string,
-    vehicleRegistrationUrl: string,
-    licenseUrl: string,
+    idProofUrl: string;
+    vehicleRegistrationUrl: string;
+    licenseUrl: string;
     status: "approved" | "pending" | "rejected";
     rejectionReason?: string;
     createdAt: Date;
-    updatedAt: Date
+    updatedAt: Date;
 }
 
 const partnerDocsSchema = new mongoose.Schema<IPartnerDocs>({
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:"User",
-        required: true
+        ref: "User",
+        required: true,
+        unique: true
     },
-    idProofUrl: String,
-    vehicleRegistrationUrl: String,
-    licenseUrl: String,
+    idProofUrl: { type: String, required: true },
+    vehicleRegistrationUrl: { type: String, required: true },
+    licenseUrl: { type: String, required: true },
     status: {
         type: String,
         enum: ["approved", "pending", "rejected"],

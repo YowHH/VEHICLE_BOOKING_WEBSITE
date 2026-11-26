@@ -3,7 +3,6 @@ import { auth } from "@/auth";
 import connectDb from "@/lib/db";
 import User from "@/models/user.model";
 import Vehicle from "@/models/vehicle.model";
-import { NextRequest } from "next/server";
 
 const VEHICLE_REGEX = /^[A-Z]{2}[0-9]{1,2}[A-Z]{0,2}[0-9]{4}$/
 
@@ -30,18 +29,12 @@ export async function POST (req:Request){
         }
         if(VEHICLE_REGEX.test(number)){
             return Response.json({
-                message: "Invalidd Vehicle Format",
+                message: "Invalid Vehicle Format",
             },{status: 400})
         }
 
         const vehicleNumber = number.toUpperCase()
-        const duplicate = await Vehicle.findOne({number:vehicleNumber})
-
-        if(duplicate){
-            return Response.json({
-                message: "Vehicle already registered.",
-            },{status: 400})
-        }
+        
 
         let vehicle = await Vehicle.findOne({owner: user.id})
 
@@ -55,6 +48,16 @@ export async function POST (req:Request){
 
             return Response.json(vehicle,{status: 200})
         }
+
+        const duplicate = await Vehicle.findOne({number:vehicleNumber})
+
+        if(duplicate){
+            return Response.json({
+                message: "Vehicle already registered.",
+            },{status: 400})
+        }
+
+
         vehicle = await Vehicle.create({
             owner: user._id,
             type,
@@ -77,7 +80,7 @@ export async function POST (req:Request){
     }
 }
 
-export async function GET(req:NextRequest) {
+export async function GET() {
     try {
         await connectDb()
         const session = await auth()

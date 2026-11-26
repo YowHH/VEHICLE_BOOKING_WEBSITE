@@ -49,6 +49,8 @@ const page = () => {
         setDocs((prev) => ({...prev,[doc]:file}))
     }
 
+    const isCompleted = docs.idProof && docs.license && docs.vehicleRegistration
+
     return (
         <div className='min-h-screen bg-white flex items-center justify-center px-4'>
             <motion.div initial={{ opacity: 0, y: 28}} animate={{ opacity: 1, y: 0}} transition={{duration: 0.4}}
@@ -75,12 +77,12 @@ const page = () => {
                             <p className='text-sm font-semibold'>ID Proof</p>
                             <p className='text-xs text-gray-500'>Gorverment issued ID</p>
                         </div>
-                        <div>
-                            <span className='text-xs text-gray-400'>Upload</span>
+                            {docs.idProof ? <span className='text-xs text-green-600 font-medium'>Uploaded</span> : <div><span className='text-xs text-gray-400'>Upload</span>
                             <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'>
                                 <UploadCloud size={18}/>
                             </div>
-                        </div>
+                            </div>
+                            }
                         <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("idProof", e.target?.files?.[0] || null)}/>
                     </motion.label>
                     <motion.label whileHover={{scale: 1.02}}
@@ -89,12 +91,12 @@ const page = () => {
                             <p className='text-sm font-semibold'>Driving License</p>
                             <p className='text-xs text-gray-500'>Valid Driving License</p>
                         </div>
-                        <div>
-                            <span className='text-xs text-gray-400'>Upload</span>
+                        {docs.license ? <span className='text-xs text-green-600 font-medium'>Uploaded</span> : <div><span className='text-xs text-gray-400'>Upload</span>
                             <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'>
                                 <UploadCloud size={18}/>
                             </div>
-                        </div>
+                            </div>
+                        }
                         <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("license", e.target?.files?.[0] || null)}/>
                     </motion.label>
                     <motion.label whileHover={{scale: 1.02}}
@@ -103,12 +105,12 @@ const page = () => {
                             <p className='text-sm font-semibold'>Vehicle RC</p>
                             <p className='text-xs text-gray-500'>Registration Certificate</p>
                         </div>
-                        <div>
-                            <span className='text-xs text-gray-400'>Upload</span>
+                        {docs.vehicleRegistration ? <span className='text-xs text-green-600 font-medium'>Uploaded</span> : <div><span className='text-xs text-gray-400'>Upload</span>
                             <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'>
                                 <UploadCloud size={18}/>
                             </div>
-                        </div>
+                            </div>
+                        }
                         <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("vehicleRegistration", e.target?.files?.[0] || null)}/>
                     </motion.label>
                 </div>
@@ -117,7 +119,7 @@ const page = () => {
                     <p>Documents are securely stored and manually verified by our teams.</p>
                 </div>
                 {error && <p className='text-red-500 mt-4'>*{error}</p>}
-                <motion.button whileHover={{scale: 1.02}} whileTap={{scale: 0.97}} onClick={handleDocs} disabled={loading}
+                <motion.button whileHover={{scale: 1.02}} whileTap={{scale: 0.97}} onClick={handleDocs} disabled={!isCompleted || loading}
                 className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold flex items-center justify-center gap-2
                 disabled:opacity-40 transition'>
                     {loading ? <CircleDashed className='text-white animate-spin'/> :"Continue"}
