@@ -48,7 +48,7 @@ export async function proxy(req: NextRequest) {
     if(pathname.startsWith("/api")){
         if(!session || !session.user){
             return NextResponse.json({
-                message: "unathorize"
+                message: "unathourized"
             },{status:401})
         }
     }
@@ -57,5 +57,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"]
+    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"]
 }
