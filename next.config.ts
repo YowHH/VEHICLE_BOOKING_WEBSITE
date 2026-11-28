@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
+const allowedDevOrigins = ['172.27.193.13', '192.168.31.88']
+
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ['192.168.31.88'],
+  allowedDevOrigins,
   turbopack: {
     rules: {
       "*.css": {
@@ -11,9 +13,8 @@ const nextConfig: NextConfig = {
     },
   },
   experimental: {
-    proxyClientMaxBodySize: 25 * 1024 * 1024, // 25MB，覆盖三张文件 + multipart 开销
+    proxyClientMaxBodySize: 25 * 1024 * 1024,
   },
 };
-
 
 export default nextConfig;

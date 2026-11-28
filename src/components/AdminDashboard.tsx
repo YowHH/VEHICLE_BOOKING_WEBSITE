@@ -2,9 +2,11 @@
 'use client'
 
 import axios from 'axios'
-import { User } from 'lucide-react'
+import { CheckCircle2, Clock, Truck, User, Users, Video, XCircle } from 'lucide-react'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
+import Kpi from './Kpi'
+import TabButton from './TabButton'
 
 type Stats = {
   totalApprovedPartners: number
@@ -13,16 +15,20 @@ type Stats = {
   totalRejectedPartners: number
 }
 
+type Tab = "partner" | "kyc" | "vehicle"
+
 const AdminDashboard = () => {
 
-
-
   const [stats, setStats] = useState<Stats | null>(null)
-
+  const [activeTab, setActiveTab] = useState<Tab>("partner")
+  const [partnerReviews, setPartnerReviews] = useState<any>()
+  const [pendingkyc, setPendingkyc] = useState<any>()
+  const [vehicleReviews, setVehicleReviews] = useState<any>()
   const handleGetData = async () => {
     try {
       const {data} = await axios.get("/api/admin/dashboard")
       setStats(data.stats)
+      setPartnerReviews(data.pendingPartnersReviews)
     } catch (error) {
       console.log(error);
     }
@@ -45,6 +51,29 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+      <main className='max-w-7xl mx-auto px-6 py-12 space-y-16'>
+        <div className='grid grid-cols-2 sm:grid-cols-4 gap-6'>
+          <Kpi label="Total Partners" value={stats?.totalPartners} icon={<Users/>} variant={"totalPartners"}/>
+          <Kpi label="Approvedd Partners" value={stats?.totalApprovedPartners} icon={<CheckCircle2/>} variant={"approved"}/>
+          <Kpi label="Pending Partners" value={stats?.totalPendingPartners} icon={<Clock/>} variant={"pending"}/>
+          <Kpi label="Rejected Partners" value={stats?.totalRejectedPartners} icon={<XCircle/>} variant={"rejected"}/>
+        </div>
+        <div className='bg-white rounded-2xl p-2 shadow-lg border border-gray-100 flex flex-wrap gap-2'>
+          <TabButton active={activeTab == "partner"} count={partnerReviews?.length ?? 0}
+          icon={<Users/>} onClick={() => setActiveTab("partner")}>
+            Pending Partner Reviews
+          </TabButton>
+          <TabButton active={activeTab == "kyc"} count={pendingkyc?.length ?? 0}
+          icon={<Video size={15}/>} onClick={() => setActiveTab("kyc")}>
+            Pending Video KYC
+          </TabButton>
+          <TabButton active={activeTab == "vehicle"} count={vehicleReviews?.length ?? 0}
+          icon={<Truck/>} onClick={() => setActiveTab("vehicle")}>
+            Partner Vehicle Reviews
+          </TabButton>
+        </div>
+      </main>
+
     </div>
   )
 }

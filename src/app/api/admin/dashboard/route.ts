@@ -8,7 +8,6 @@ export async function GET(req:NextRequest) {
     try {
         await connectDb()
         const session = await auth()
-        console.log("=== 后端拿到的 Session ===", session) 
         if (!session || !session.user?.email || (session.user as { role?: string }).role !== "admin") {
             return Response.json({ message: "unauthorized" }, { status: 401 })
         }
