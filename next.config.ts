@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const allowedDevOrigins = ['172.27.193.13', '192.168.31.88']
+const allowedDevOrigins = ['172.27.193.13', '192.168.31.88', '10.16.188.185']
 
 const nextConfig: NextConfig = {
   allowedDevOrigins,

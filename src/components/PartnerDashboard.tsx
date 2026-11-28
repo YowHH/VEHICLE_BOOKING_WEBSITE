@@ -83,6 +83,7 @@ const PartnerDashboard = () => {
                 </div>
             </div>
         </div>
+        
     )
 }
 

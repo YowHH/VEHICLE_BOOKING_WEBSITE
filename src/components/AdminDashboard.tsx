@@ -7,6 +7,9 @@ import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 import Kpi from './Kpi'
 import TabButton from './TabButton'
+import { AnimatePresence, motion } from 'motion/react'
+import ContentList from './ContentList'
+
 
 type Stats = {
   totalApprovedPartners: number
@@ -28,7 +31,7 @@ const AdminDashboard = () => {
     try {
       const {data} = await axios.get("/api/admin/dashboard")
       setStats(data.stats)
-      setPartnerReviews(data.pendingPartnersReviews)
+      setPartnerReviews(data.pendingPartnerReviews)
     } catch (error) {
       console.log(error);
     }
@@ -72,6 +75,14 @@ const AdminDashboard = () => {
             Partner Vehicle Reviews
           </TabButton>
         </div>
+        <AnimatePresence mode='wait'>
+          <motion.div key={activeTab} initial={{opacity: 0, y: 16}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -8}}
+          className='space-y-3'>
+            {activeTab == "partner" && <ContentList data={partnerReviews ?? []} type={"partner"}/>}
+            {activeTab == "kyc" && <ContentList data={pendingkyc ?? []} type={"kyc"}/>}
+            {activeTab == "vehicle" && <ContentList data={vehicleReviews ?? []} type={"vehicle"}/>}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
     </div>
